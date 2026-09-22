@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adeus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v=20260828-clean-3" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <div id="app" class="shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Adeus home">
+          <span class="brand-mark" aria-hidden="true">A</span>
+          <strong>Adeus</strong>
+        </a>
+        <nav class="topnav" aria-label="Primary navigation">
+          <button class="topnav-link active" type="button" data-category-shortcut="all">Inbox</button>
+          <button class="topnav-link" type="button" data-scroll-target="labels">Categories</button>
+          <button class="topnav-link" type="button" data-category-shortcut="needs-reply">Recent Tasks</button>
+          <button id="desk-btn" class="topnav-link" type="button">Settings</button>
+        </nav>
+        <form id="search-form" class="search">
+          <label class="sr-only" for="search">Search mail</label>
+          <span class="search-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input
+            id="search"
+            name="q"
+            type="search"
+            placeholder="Search… e.g. category:promotions newer_than:30d"
+            autocomplete="off"
+          />
+          <button class="sr-only" type="submit">Search</button>
+        </form>
+        <div class="top-actions">
+          <p id="account" class="account">Not connected</p>
+          <button id="auth-btn" class="btn btn-ghost" type="button">Connect Gmail</button>
+        </div>
+      </header>
+
+      <main class="dashboard">
+        <section class="sync-card" aria-label="Analysis controls">
+          <div class="sync-status">
+            <span class="sync-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-10 6L2 7" />
+              </svg>
+            </span>
+            <div>
+              <strong>Email analysis</strong>
+              <p id="list-meta" class="list-meta"></p>
+            </div>
+          </div>
+          <div class="analysis-controls">
+            <label for="analysis-start-date">Analyze from</label>
+            <input id="analysis-start-date" type="date" />
+            <button id="analyse-account-btn" class="btn btn-brass" type="button">
+              Run Full Analysis
+            </button>
+          </div>
+        </section>
+
+        <section
+          id="analysis-summary"
+          class="analysis-summary analysis-summary-main hidden"
+          role="status"
+          aria-live="polite"
+        ></section>
+
+        <section class="category-section" aria-labelledby="category-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Organise</p>
+              <h2 id="category-title">Categories</h2>
+            </div>
+          </div>
+          <nav id="labels" class="labels" aria-label="Categories"></nav>
+          <nav id="category-bar" class="category-bar hidden" aria-label="Filed categories" hidden></nav>
+        </section>
+
+        <section class="workspace">
+          <section class="list-pane" aria-label="Messages">
+            <header class="pane-heading">
+              <div>
+                <p class="eyebrow">Inbox</p>
+                <h2>Recent items</h2>
+              </div>
+              <div class="bulk-actions">
+                <button id="bulk-archive" class="btn btn-ghost btn-small hidden" type="button">
+                  Archive all
+                </button>
+                <button id="bulk-trash" class="btn btn-ghost btn-small btn-danger hidden" type="button">
+                  Delete all
+                </button>
+              </div>
+            </header>
+            <div id="message-list" class="message-list"></div>
+            <div id="list-empty" class="empty hidden">
+              <p>The tray is empty.</p>
+            </div>
+            <button id="load-more" class="btn btn-ghost load-more hidden" type="button">
+              Older correspondence
+            </button>
+          </section>
+
+          <section class="read-pane" aria-label="Reading pane">
+            <div id="reader" class="reader reader-idle">
+              <div class="idle-card">
+                <p class="postmark">SELECTED EMAIL</p>
+                <h2>Select a message</h2>
+                <p>Open an item to review its thread, reply draft, and linked task.</p>
+              </div>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="banner" class="banner hidden" role="status"></div>
+
+    <div id="desk" class="desk hidden" aria-hidden="true">
+      <div class="desk-card">
+        <p class="postmark">ADEUS CONTROL ROOM</p>
+        <div class="desk-title-row">
+          <div>
+            <h2>Analysis settings</h2>
+            <p>Connect services, shape DeepSeek’s decisions, and automate full analysis.</p>
+          </div>
+        </div>
+        <div class="desk-tabs" role="tablist" aria-label="AI desk">
+          <button
+            type="button"
+            class="desk-tab active"
+            id="tab-keys"
+            data-tab="keys"
+            role="tab"
+            aria-selected="true"
+            aria-controls="desk-pane-keys"
+          >
+            Connections
+          </button>
+          <button
+            type="button"
+            class="desk-tab"
+            id="tab-settings"
+            data-tab="settings"
+            role="tab"
+            aria-selected="false"
+            aria-controls="desk-pane-settings"
+          >
+            Analysis
+          </button>
+          <button
+            type="button"
+            class="desk-tab"
+            id="tab-scheduler"
+            data-tab="scheduler"
+            role="tab"
+            aria-selected="false"
+            aria-controls="desk-pane-scheduler"
+          >
+            Schedule
+          </button>
+        </div>
+
+        <div id="desk-pane-keys" class="desk-pane" role="tabpanel" aria-labelledby="tab-keys">
+          <h2 class="sr-only">Connections</h2>
+          <p class="desk-copy">
+            Credentials stay on this machine. DeepSeek analyzes plain-text threads;
+            Notion receives only extracted task details.
+          </p>
+
+          <form id="grok-form" class="desk-block">
+            <label class="desk-label" for="grok-key">Grok API key</label>
+            <input
+              id="grok-key"
+              name="grok_api_key"
+              type="password"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="xai-…"
+            />
+            <p id="grok-hint" class="desk-hint">No Grok key saved yet.</p>
+            <div class="desk-actions">
+              <button class="btn btn-brass" type="submit">Save Grok</button>
+              <button id="grok-clear" class="btn btn-ghost" type="button">Remove</button>
+            </div>
+            <p class="desk-copy desk-note">
+              From <a href="https://console.x.ai/" target="_blank" rel="noreferrer">console.x.ai</a>
+            </p>
+          </form>
+
+          <form id="deepseek-form" class="desk-block">
+            <label class="desk-label" for="deepseek-key">DeepSeek API key</label>
+            <input
+              id="deepseek-key"
+              name="deepseek_api_key"
+              type="password"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="sk-…"
+            />
+            <p id="deepseek-hint" class="desk-hint">No DeepSeek key saved yet.</p>
+            <div class="desk-actions">
+              <button class="btn btn-brass" type="submit">Save DeepSeek</button>
+              <button id="deepseek-clear" class="btn btn-ghost" type="button">Remove</button>
+            </div>
+            <p class="desk-copy desk-note">
+              From <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer">platform.deepseek.com</a>
+            </p>
+          </form>
+
+          <form id="notion-form" class="desk-block">
+            <h3 class="desk-subhead">Notion</h3>
+            <p class="desk-copy">
+              Create checklist pages for emails that need replies or contain another
+              concrete action for you.
+            </p>
+            <label class="desk-label" for="notion-key">Integration token</label>
+            <input
+              id="notion-key"
+              type="password"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="secret_…"
+            />
+            <label class="desk-label notion-database-label" for="notion-database">
+              To-do database ID or URL
+            </label>
+            <input
+              id="notion-database"
+              type="text"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="Paste a Notion database URL or ID"
+            />
+            <p id="notion-hint" class="desk-hint">No Notion integration saved yet.</p>
+            <div class="desk-actions">
+              <button class="btn btn-brass" type="submit">Save Notion</button>
+              <button id="notion-clear" class="btn btn-ghost" type="button">Remove</button>
+            </div>
+            <p class="desk-copy desk-note">
+              Share the target database with your Notion integration before analysing email.
+            </p>
+          </form>
+
+          <p id="gmail-compose-note" class="desk-copy desk-note hidden">
+            Reply drafts and mass archive/delete need extra Gmail permissions.
+            <button id="gmail-reconnect" class="text-button" type="button">Reconnect Gmail</button>
+          </p>
+        </div>
+
+        <div id="desk-pane-settings" class="desk-pane hidden" role="tabpanel" aria-labelledby="tab-settings">
+          <h2>DeepSeek analysis</h2>
+          <p class="desk-copy">
+            Name the filing buckets and define how work tasks should be extracted.
+            Adeus combines these instructions for DeepSeek during analysis.
+          </p>
+
+          <form id="classify-form" class="desk-block sorting-block">
+            <div class="category-toolbar">
+              <label class="desk-label" for="category-list">Categories</label>
+              <button id="add-category" class="btn btn-ghost" type="button">Add category</button>
+            </div>
+            <div id="category-list" class="category-list"></div>
+
+            <label class="desk-label" for="prompt-preview">Prompt DeepSeek will receive</label>
+            <pre id="prompt-preview" class="prompt-preview"></pre>
+            <p id="prompt-status" class="prompt-status">Saved. Analysis uses this combined prompt.</p>
+
+            <label class="desk-label task-prompt-label" for="task-extraction-prompt">
+              Task Extraction Prompt
+            </label>
+            <textarea
+              id="task-extraction-prompt"
+              class="task-extraction-prompt"
+              rows="8"
+              maxlength="6000"
+              placeholder="Tell DeepSeek when a work thread should become a task and which details to extract."
+            ></textarea>
+            <p class="desk-copy desk-note">
+              Applied only to work threads. DeepSeek receives plain text, never email HTML.
+            </p>
+            <div class="desk-actions">
+              <button class="btn btn-brass" type="submit">Save settings</button>
+              <button id="classify-reset" class="btn btn-ghost" type="button">Restore defaults</button>
+            </div>
+          </form>
+        </div>
+
+        <div id="desk-pane-scheduler" class="desk-pane hidden" role="tabpanel" aria-labelledby="tab-scheduler">
+          <section id="scheduler-panel" class="scheduler-panel scheduler-panel-settings">
+            <div class="scheduler-head">
+              <div>
+                <p class="eyebrow">Automation</p>
+                <h3>Daily full analysis</h3>
+                <p>Runs the same classification, task extraction, reply scan, and draft workflow.</p>
+              </div>
+              <label class="scheduler-switch">
+                <input id="scheduler-enabled" type="checkbox" />
+                <span>Enabled</span>
+              </label>
+            </div>
+            <div class="scheduler-fields">
+              <label>
+                Run time
+                <input id="scheduler-time" type="time" value="07:00" />
+              </label>
+              <label>
+                Lookback hours
+                <input id="scheduler-lookback" type="number" min="1" max="8760" value="24" />
+              </label>
+            </div>
+            <p id="scheduler-next" class="scheduler-next">Schedule not loaded.</p>
+            <div class="scheduler-actions">
+              <button id="scheduler-save" class="btn btn-brass" type="button">Save schedule</button>
+              <button id="scheduler-run-now" class="btn btn-ghost" type="button">Run this window now</button>
+            </div>
+            <div id="scheduler-last-run" class="scheduler-last-run">No scheduled runs yet.</div>
+            <details class="scheduler-history">
+              <summary>Past runs</summary>
+              <div id="scheduler-run-log" class="scheduler-run-log">No runs yet.</div>
+            </details>
+          </section>
+        </div>
+
+        <div class="desk-actions desk-close-row">
+          <button id="desk-close" class="btn btn-ghost" type="button">Close</button>
+        </div>
+      </div>
+    </div>
+    <script src="/static/app.js?v=20260828-bulk-2"></script>
+  </body>
+</html>
