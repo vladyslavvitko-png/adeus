@@ -39,7 +39,7 @@ def _database_id(value: Optional[str] = None) -> str:
 def _headers() -> dict[str, str]:
     token = settings.notion_api_key()
     if not token:
-        raise NotionError("Add a Notion integration token in the AI desk first.")
+        raise NotionError("Set NOTION_API_KEY in .env first.")
     return {
         "Authorization": f"Bearer {token}",
         "Notion-Version": NOTION_VERSION,

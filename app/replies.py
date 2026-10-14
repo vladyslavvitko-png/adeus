@@ -426,7 +426,7 @@ def analyze_account_thread(
     message: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     if not settings.deepseek_api_key():
-        raise ReplyScanError("Save a DeepSeek API key in the AI desk first.")
+        raise ReplyScanError("Set DEEPSEEK_API_KEY in .env first.")
     if not auth.load_credentials():
         raise PermissionError("Not connected to Gmail.")
     message = message or gmail_client.get_thread(thread_id)
@@ -550,7 +550,7 @@ def tray_candidates() -> dict[str, Any]:
 
 def scan_threads(message_ids: Optional[list[str]] = None) -> dict[str, Any]:
     if not settings.grok_api_key() and not settings.deepseek_api_key():
-        raise ReplyScanError("Save a Grok or DeepSeek API key in the AI desk first.")
+        raise ReplyScanError("Set GROK_API_KEY or DEEPSEEK_API_KEY in .env first.")
     if not auth.load_credentials():
         raise PermissionError("Not connected to Gmail.")
     owner = _owner_email()

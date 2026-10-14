@@ -86,19 +86,9 @@ const els = {
   desk: document.getElementById("desk"),
   deskBtn: document.getElementById("desk-btn"),
   deskClose: document.getElementById("desk-close"),
-  grokForm: document.getElementById("grok-form"),
-  grokKey: document.getElementById("grok-key"),
   grokHint: document.getElementById("grok-hint"),
-  grokClear: document.getElementById("grok-clear"),
-  deepseekForm: document.getElementById("deepseek-form"),
-  deepseekKey: document.getElementById("deepseek-key"),
   deepseekHint: document.getElementById("deepseek-hint"),
-  deepseekClear: document.getElementById("deepseek-clear"),
-  notionForm: document.getElementById("notion-form"),
-  notionKey: document.getElementById("notion-key"),
-  notionDatabase: document.getElementById("notion-database"),
   notionHint: document.getElementById("notion-hint"),
-  notionClear: document.getElementById("notion-clear"),
   categoryBar: document.getElementById("category-bar"),
   classifyForm: document.getElementById("classify-form"),
   classifyLimit: document.getElementById("classify-limit"),
@@ -390,21 +380,18 @@ function applyAiSettings(ai) {
   state.llm = ai.preferred_llm || (state.grokReady ? "grok" : "deepseek");
   if (els.grokHint) {
     els.grokHint.textContent = ai.grok_configured
-      ? `Saved Grok key ${ai.grok_key_hint}`
-      : "No Grok key saved yet.";
+      ? "Grok key loaded from GROK_API_KEY."
+      : "Set GROK_API_KEY in .env.";
   }
   if (els.deepseekHint) {
     els.deepseekHint.textContent = ai.deepseek_configured
-      ? `Saved DeepSeek key ${ai.deepseek_key_hint}`
-      : "No DeepSeek key saved yet.";
+      ? "DeepSeek key loaded from DEEPSEEK_API_KEY."
+      : "Set DEEPSEEK_API_KEY in .env.";
   }
   if (els.notionHint) {
     els.notionHint.textContent = ai.notion_configured
-      ? `Notion connected ${ai.notion_key_hint}`
-      : "No Notion integration saved yet.";
-  }
-  if (els.notionDatabase && ai.notion_database_id != null) {
-    els.notionDatabase.value = ai.notion_database_id || "";
+      ? "Notion loaded from NOTION_API_KEY and NOTION_DATABASE_ID."
+      : "Set NOTION_API_KEY and NOTION_DATABASE_ID in .env.";
   }
   if (els.deskBtn) {
     const ready = [];
@@ -583,18 +570,12 @@ function setDeskTab(tab) {
 function openDesk(tab) {
   els.desk.classList.remove("hidden");
   els.desk.setAttribute("aria-hidden", "false");
-  els.grokKey.value = "";
-  els.deepseekKey.value = "";
-  if (els.notionKey) els.notionKey.value = "";
   if (!state.promptDirty) fillSettingsForm();
   else updatePromptPreview();
   const pane = typeof tab === "string" ? tab : (state.deepseekReady ? "settings" : "keys");
   setDeskTab(pane);
   const card = els.desk.querySelector(".desk-card");
   if (card) card.scrollTop = 0;
-  if (tab === "keys" || !state.deepseekReady) {
-    (state.grokReady ? els.deepseekKey : els.grokKey).focus();
-  }
 }
 
 function closeDesk() {
@@ -628,7 +609,7 @@ function bindLlmDock(messageId) {
     const ready = chosen === "deepseek" ? state.deepseekReady : state.grokReady;
     if (!ready) {
       openDesk();
-      showToast(`Save a ${chosen === "deepseek" ? "DeepSeek" : "Grok"} API key in the AI desk first.`, "error");
+      showToast(`Set ${chosen === "deepseek" ? "DEEPSEEK_API_KEY" : "GROK_API_KEY"} in .env first.`, "error");
       return;
     }
     state.llm = chosen;
@@ -1044,123 +1025,6 @@ els.deskClose.addEventListener("click", closeDesk);
 els.desk.addEventListener("click", (event) => {
   if (event.target === els.desk) closeDesk();
 });
-els.grokForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const key = els.grokKey.value.trim();
-  if (!key) {
-    showToast("Paste a Grok API key first.", "error");
-    return;
-  }
-  try {
-    const data = await api("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ grok_api_key: key, preferred_llm: "grok" }),
-    });
-    els.grokKey.value = "";
-    applyAiSettings(data);
-    showToast("Grok key saved on this machine.");
-  } catch (err) {
-    showToast(err.message, "error");
-  }
-});
-els.grokClear.addEventListener("click", async () => {
-  try {
-    const data = await api("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ grok_api_key: "" }),
-    });
-    els.grokKey.value = "";
-    applyAiSettings(data);
-    showToast("Grok key removed.");
-  } catch (err) {
-    showToast(err.message, "error");
-  }
-});
-
-els.deepseekForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const key = els.deepseekKey.value.trim();
-  if (!key) {
-    showToast("Paste a DeepSeek API key first.", "error");
-    return;
-  }
-  try {
-    const data = await api("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ deepseek_api_key: key, preferred_llm: "deepseek" }),
-    });
-    els.deepseekKey.value = "";
-    applyAiSettings(data);
-    showToast("DeepSeek key saved on this machine.");
-  } catch (err) {
-    showToast(err.message, "error");
-  }
-});
-els.deepseekClear.addEventListener("click", async () => {
-  try {
-    const data = await api("/api/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ deepseek_api_key: "" }),
-    });
-    els.deepseekKey.value = "";
-    applyAiSettings(data);
-    showToast("DeepSeek key removed.");
-  } catch (err) {
-    showToast(err.message, "error");
-  }
-});
-
-if (els.notionForm) {
-  els.notionForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const key = els.notionKey.value.trim();
-    const database = els.notionDatabase.value.trim();
-    if (!key && !state.notionReady) {
-      showToast("Paste a Notion integration token first.", "error");
-      return;
-    }
-    if (!database) {
-      showToast("Paste a Notion to-do database URL or ID.", "error");
-      return;
-    }
-    const payload = { notion_database_id: database };
-    if (key) payload.notion_api_key = key;
-    try {
-      const data = await api("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      els.notionKey.value = "";
-      applyAiSettings(data);
-      showToast("Notion integration saved.");
-    } catch (err) {
-      showToast(err.message, "error");
-    }
-  });
-}
-if (els.notionClear) {
-  els.notionClear.addEventListener("click", async () => {
-    try {
-      const data = await api("/api/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notion_api_key: "", notion_database_id: "" }),
-      });
-      els.notionKey.value = "";
-      els.notionDatabase.value = "";
-      applyAiSettings(data);
-      showToast("Notion integration removed.");
-    } catch (err) {
-      showToast(err.message, "error");
-    }
-  });
-}
-
 async function saveClassifySettings() {
   const categories = collectCategories();
   const limit = Math.max(1, Math.min(Number(els.classifyLimit && els.classifyLimit.value) || letterCount(), 1000));
@@ -1260,7 +1124,7 @@ async function scanReplies() {
   }
   if (!state.grokReady && !state.deepseekReady) {
     openDesk("keys");
-    showToast("Save a Grok or DeepSeek API key in the AI desk first.", "error");
+    showToast("Set GROK_API_KEY or DEEPSEEK_API_KEY in .env first.", "error");
     return;
   }
   state.scanningReplies = true;
@@ -1537,12 +1401,12 @@ async function analyseGmailAccount() {
   }
   if (!state.deepseekReady) {
     openDesk("keys");
-    showToast("Save a DeepSeek API key before running analysis.", "error");
+    showToast("Set DEEPSEEK_API_KEY in .env before running analysis.", "error");
     return;
   }
   if (!state.notionReady) {
     openDesk("keys");
-    showToast("Connect a Notion task database before running analysis.", "error");
+    showToast("Set NOTION_API_KEY and NOTION_DATABASE_ID in .env before running analysis.", "error");
     return;
   }
   if (state.promptDirty) {

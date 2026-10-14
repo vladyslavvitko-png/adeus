@@ -178,83 +178,18 @@
         <div id="desk-pane-keys" class="desk-pane" role="tabpanel" aria-labelledby="tab-keys">
           <h2 class="sr-only">Connections</h2>
           <p class="desk-copy">
-            Credentials stay on this machine. DeepSeek analyzes plain-text threads;
-            Notion receives only extracted task details.
+            API keys and tokens are read from <code>.env</code> on this machine.
+            DeepSeek analyzes plain-text threads; Notion receives only extracted task details.
           </p>
-
-          <form id="grok-form" class="desk-block">
-            <label class="desk-label" for="grok-key">Grok API key</label>
-            <input
-              id="grok-key"
-              name="grok_api_key"
-              type="password"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="xai-…"
-            />
-            <p id="grok-hint" class="desk-hint">No Grok key saved yet.</p>
-            <div class="desk-actions">
-              <button class="btn btn-brass" type="submit">Save Grok</button>
-              <button id="grok-clear" class="btn btn-ghost" type="button">Remove</button>
-            </div>
+          <div class="desk-block">
+            <p id="grok-hint" class="desk-hint">Set GROK_API_KEY in .env.</p>
+            <p id="deepseek-hint" class="desk-hint">Set DEEPSEEK_API_KEY in .env.</p>
+            <p id="notion-hint" class="desk-hint">Set NOTION_API_KEY and NOTION_DATABASE_ID in .env.</p>
             <p class="desk-copy desk-note">
-              From <a href="https://console.x.ai/" target="_blank" rel="noreferrer">console.x.ai</a>
+              Restart Adeus after changing <code>.env</code>. Share the target Notion
+              database with your integration before analysing email.
             </p>
-          </form>
-
-          <form id="deepseek-form" class="desk-block">
-            <label class="desk-label" for="deepseek-key">DeepSeek API key</label>
-            <input
-              id="deepseek-key"
-              name="deepseek_api_key"
-              type="password"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="sk-…"
-            />
-            <p id="deepseek-hint" class="desk-hint">No DeepSeek key saved yet.</p>
-            <div class="desk-actions">
-              <button class="btn btn-brass" type="submit">Save DeepSeek</button>
-              <button id="deepseek-clear" class="btn btn-ghost" type="button">Remove</button>
-            </div>
-            <p class="desk-copy desk-note">
-              From <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer">platform.deepseek.com</a>
-            </p>
-          </form>
-
-          <form id="notion-form" class="desk-block">
-            <h3 class="desk-subhead">Notion</h3>
-            <p class="desk-copy">
-              Create checklist pages for emails that need replies or contain another
-              concrete action for you.
-            </p>
-            <label class="desk-label" for="notion-key">Integration token</label>
-            <input
-              id="notion-key"
-              type="password"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="secret_…"
-            />
-            <label class="desk-label notion-database-label" for="notion-database">
-              To-do database ID or URL
-            </label>
-            <input
-              id="notion-database"
-              type="text"
-              autocomplete="off"
-              spellcheck="false"
-              placeholder="Paste a Notion database URL or ID"
-            />
-            <p id="notion-hint" class="desk-hint">No Notion integration saved yet.</p>
-            <div class="desk-actions">
-              <button class="btn btn-brass" type="submit">Save Notion</button>
-              <button id="notion-clear" class="btn btn-ghost" type="button">Remove</button>
-            </div>
-            <p class="desk-copy desk-note">
-              Share the target database with your Notion integration before analysing email.
-            </p>
-          </form>
+          </div>
 
           <p id="gmail-compose-note" class="desk-copy desk-note hidden">
             Reply drafts and mass archive/delete need extra Gmail permissions.
@@ -341,6 +276,6 @@
         </div>
       </div>
     </div>
-    <script src="/static/app.js?v=20260828-bulk-2"></script>
+    <script src="/static/app.js?v=20260922-env"></script>
   </body>
 </html>

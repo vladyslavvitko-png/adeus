@@ -17,7 +17,7 @@ class GrokError(RuntimeError):
 def _require_key() -> str:
     key = settings.grok_api_key()
     if not key:
-        raise GrokError("Add a Grok API key in the AI desk first.")
+        raise GrokError("Set GROK_API_KEY in .env first.")
     return key
 
 
@@ -77,7 +77,7 @@ def chat(
                         json=body,
                     )
                 if response.status_code == 401:
-                    raise GrokError("Grok rejected the API key. Check it in the AI desk.")
+                    raise GrokError("Grok rejected the API key. Check GROK_API_KEY in .env.")
                 if response.status_code in (400, 404) and "model" in response.text.lower():
                     last_error = f"Model {model} is not available."
                     break

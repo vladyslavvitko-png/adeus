@@ -93,7 +93,7 @@ def run_full_analysis(
     should_cancel: Optional[CancelCallback] = None,
 ) -> dict[str, Any]:
     if not settings.deepseek_api_key():
-        raise AnalysisError("Save a DeepSeek API key before running analysis.")
+        raise AnalysisError("Set DEEPSEEK_API_KEY in .env before running analysis.")
     if not auth.load_credentials():
         raise AnalysisError("Connect Gmail before running analysis.")
     if not notion_client.configured():

@@ -1,17 +1,20 @@
 from __future__ import annotations
 
 import json
+import os
 import socket
 import threading
 from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(ROOT / ".env")
 TOKEN_PATH = ROOT / "token.json"
 PENDING_PATH = ROOT / ".oauth_pending.json"
 READONLY_SCOPE = "https://www.googleapis.com/auth/gmail.readonly"
@@ -23,25 +26,44 @@ MODIFY_SCOPES = {MODIFY_SCOPE, "https://mail.google.com/"}
 LOGIN_PORT = 8753
 
 
-def credentials_path() -> Path:
-    matches = sorted(ROOT.glob("client_secret_*.json"))
-    if matches:
-        return matches[0]
-    candidate = ROOT / "credentials.json"
-    if candidate.exists():
-        return candidate
-    raise FileNotFoundError(
-        "No Google OAuth client file found. Place a Desktop app client JSON "
-        "(client_secret_*.json or credentials.json) in the project root."
-    )
+def _env(name: str) -> str:
+    return (os.environ.get(name) or "").strip()
+
+
+def client_config() -> dict:
+    client_id = _env("GOOGLE_CLIENT_ID")
+    client_secret = _env("GOOGLE_CLIENT_SECRET")
+    if not client_id or not client_secret:
+        raise FileNotFoundError(
+            "Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in .env."
+        )
+    return {
+        "installed": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "project_id": _env("GOOGLE_PROJECT_ID"),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "redirect_uris": ["http://localhost"],
+        }
+    }
 
 
 def load_credentials() -> Optional[Credentials]:
     if not TOKEN_PATH.exists():
         return None
+    try:
+        data = json.loads(TOKEN_PATH.read_text())
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, dict):
+        return None
     # Use the scopes stored in the token itself so a token issued before a
     # scope was added to SCOPES keeps refreshing instead of erroring.
-    creds = Credentials.from_authorized_user_file(TOKEN_PATH)
+    data["client_id"] = _env("GOOGLE_CLIENT_ID")
+    data["client_secret"] = _env("GOOGLE_CLIENT_SECRET")
+    creds = Credentials.from_authorized_user_info(data)
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
         save_credentials(creds)
@@ -51,7 +73,14 @@ def load_credentials() -> Optional[Credentials]:
 
 
 def save_credentials(creds: Credentials) -> None:
-    TOKEN_PATH.write_text(creds.to_json())
+    data = json.loads(creds.to_json())
+    data.pop("client_id", None)
+    data.pop("client_secret", None)
+    TOKEN_PATH.write_text(json.dumps(data))
+    try:
+        TOKEN_PATH.chmod(0o600)
+    except OSError:
+        pass
 
 
 def clear_credentials() -> None:
@@ -113,8 +142,8 @@ def run_desktop_login(force: bool = False) -> Credentials:
         )
     try:
         _assert_login_port_free()
-        flow = InstalledAppFlow.from_client_secrets_file(
-            str(credentials_path()),
+        flow = InstalledAppFlow.from_client_config(
+            client_config(),
             scopes=SCOPES,
         )
         creds = flow.run_local_server(
@@ -159,10 +188,8 @@ def profile() -> Optional[dict]:
 
 
 def client_info() -> dict:
-    path = credentials_path()
-    data = json.loads(path.read_text())
-    installed = data.get("installed") or data.get("web") or {}
+    installed = client_config()["installed"]
     return {
-        "project_id": installed.get("project_id"),
-        "file": path.name,
+        "project_id": installed.get("project_id") or None,
+        "file": ".env",
     }

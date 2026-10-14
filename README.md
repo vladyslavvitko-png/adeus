@@ -8,7 +8,7 @@ never sends, deletes, or marks email as read.
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), enable **Gmail API** for the same project that issued your OAuth client.
 2. On the OAuth consent screen, add your Google account as a **test user**.
-3. Keep the Desktop app client JSON in this folder (`client_secret_*.json` or `credentials.json`).
+3. Copy `.env.example` to `.env` and fill in the API keys and Google OAuth client values.
 
 ## Run
 
@@ -23,9 +23,9 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) and click **Connect Gmail**.
 Approve both read and compose access: compose access is used only to save reply
 drafts, never to send them.
 
-Open **Settings** to save a DeepSeek key, Notion integration token/database, filing
-categories, the Task Extraction Prompt, and the scheduler. Secrets remain in gitignored
-`settings.json`; Gmail credentials remain in gitignored `token.json`.
+Open **Settings** for filing categories, the Task Extraction Prompt, and the scheduler.
+API keys and the Google OAuth client live in gitignored `.env`. The Gmail session
+token remains in gitignored `token.json`.
 
 ## Full analysis
 

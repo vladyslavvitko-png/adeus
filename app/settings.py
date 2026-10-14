@@ -1,13 +1,23 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 from typing import Any, Optional
 
+from dotenv import load_dotenv
+
 from .auth import ROOT
 
+load_dotenv(ROOT / ".env")
+
 SETTINGS_PATH = ROOT / "settings.json"
-KEY_FIELDS = ("grok_api_key", "deepseek_api_key", "notion_api_key")
+SECRET_FIELDS = (
+    "grok_api_key",
+    "deepseek_api_key",
+    "notion_api_key",
+    "notion_database_id",
+)
 MAX_CLASSIFY_LIMIT = 1000
 MAX_CATEGORIES = 16
 DEFAULT_TASK_EXTRACTION_PROMPT = (
@@ -142,8 +152,7 @@ def save_settings(updates: dict[str, Any]) -> dict[str, Any]:
     for key, value in updates.items():
         if value is None or key in ("classify_categories", "classify_limit"):
             continue
-        if key in KEY_FIELDS and isinstance(value, str) and value.strip() == "":
-            current.pop(key, None)
+        if key in SECRET_FIELDS:
             continue
         if key == "classify_prompt":
             if rebuilt_from_categories:
@@ -160,6 +169,8 @@ def save_settings(updates: dict[str, Any]) -> dict[str, Any]:
                 current[key] = value.strip()[:6000] or DEFAULT_TASK_EXTRACTION_PROMPT
             continue
         current[key] = value.strip() if isinstance(value, str) else value
+    for key in SECRET_FIELDS:
+        current.pop(key, None)
     SETTINGS_PATH.write_text(json.dumps(current, indent=2) + "\n")
     try:
         SETTINGS_PATH.chmod(0o600)
@@ -168,26 +179,25 @@ def save_settings(updates: dict[str, Any]) -> dict[str, Any]:
     return public_settings()
 
 
-def _key(name: str) -> Optional[str]:
-    value = (load_settings().get(name) or "").strip()
+def _env(name: str) -> Optional[str]:
+    value = (os.environ.get(name) or "").strip()
     return value or None
 
 
 def grok_api_key() -> Optional[str]:
-    return _key("grok_api_key")
+    return _env("GROK_API_KEY")
 
 
 def deepseek_api_key() -> Optional[str]:
-    return _key("deepseek_api_key")
+    return _env("DEEPSEEK_API_KEY")
 
 
 def notion_api_key() -> Optional[str]:
-    return _key("notion_api_key")
+    return _env("NOTION_API_KEY")
 
 
 def notion_database_id() -> Optional[str]:
-    value = (load_settings().get("notion_database_id") or "").strip()
-    return value or None
+    return _env("NOTION_DATABASE_ID")
 
 
 def grok_model() -> str:
@@ -237,26 +247,16 @@ def preferred_llm() -> str:
     return "grok"
 
 
-def _hint(key: str) -> str:
-    if len(key) <= 8:
-        return "••••"
-    return key[:4] + "…" + key[-4:]
-
-
 def public_settings() -> dict[str, Any]:
     grok = grok_api_key()
     deepseek = deepseek_api_key()
     notion = notion_api_key()
     return {
         "grok_configured": bool(grok),
-        "grok_key_hint": _hint(grok) if grok else "",
         "grok_model": grok_model(),
         "deepseek_configured": bool(deepseek),
-        "deepseek_key_hint": _hint(deepseek) if deepseek else "",
         "deepseek_model": deepseek_model(),
         "notion_configured": bool(notion and notion_database_id()),
-        "notion_key_hint": _hint(notion) if notion else "",
-        "notion_database_id": notion_database_id() or "",
         "preferred_llm": preferred_llm(),
         "classify_prompt": classify_prompt(),
         "task_extraction_prompt": task_extraction_prompt(),

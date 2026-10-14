@@ -17,7 +17,7 @@ class DeepSeekError(RuntimeError):
 def _require_key() -> str:
     key = settings.deepseek_api_key()
     if not key:
-        raise DeepSeekError("Add a DeepSeek API key in the AI desk first.")
+        raise DeepSeekError("Set DEEPSEEK_API_KEY in .env first.")
     return key
 
 
@@ -60,7 +60,7 @@ def chat(
                         json=body,
                     )
                 if response.status_code == 401:
-                    raise DeepSeekError("DeepSeek rejected the API key. Check it in the AI desk.")
+                    raise DeepSeekError("DeepSeek rejected the API key. Check DEEPSEEK_API_KEY in .env.")
                 if response.status_code in (400, 404) and "model" in response.text.lower():
                     last_error = f"Model {model} is not available."
                     break

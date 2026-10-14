@@ -44,12 +44,8 @@ class CategoryItem(BaseModel):
 
 
 class SettingsUpdate(BaseModel):
-    grok_api_key: Optional[str] = None
     grok_model: Optional[str] = None
-    deepseek_api_key: Optional[str] = None
     deepseek_model: Optional[str] = None
-    notion_api_key: Optional[str] = None
-    notion_database_id: Optional[str] = None
     preferred_llm: Optional[str] = None
     classify_prompt: Optional[str] = None
     task_extraction_prompt: Optional[str] = None
